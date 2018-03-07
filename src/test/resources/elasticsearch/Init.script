@@ -1,0 +1,10 @@
+#create index
+#PUT:metadata_name/:{"settings":{"index":{"number_of_shards":1, "number_of_replicas":1}}}
+#create mapping
+PUT:metadata_name/:{ "mappings":{"default":{ "properties":{ "dbid":{"type":"text"}, "type":{"type":"text"}, "code":{"type":"text"}, "name":{"type":"text"}}}}}
+
+#create index
+#PUT:performerlinks/:{"settings":{"index":{"number_of_shards":1, "number_of_replicas":1}}}
+#create mapping
+PUT:performerlinks/:{ "mappings":{"default":{ "properties":{ "performer":{"type":"text"}, "events":{"type":"text"}}}}}
+

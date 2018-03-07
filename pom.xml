@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<artifactId>metadata</artifactId>
+	<version>1.0.0-SNAPSHOT</version>
+
+    <parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>1.5.10.RELEASE</version>
+		<relativePath/>
+	</parent>
+
+	<properties>
+
+        <!--  contextRoot>msm</contextRoot-->
+
+        <!-- TODO: dynamically insert a build number from Bamboo here -->
+        <buildVersion>1</buildVersion>
+
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <cassandraVersion>3.11.0</cassandraVersion>
+
+        <!-- Testing properties (change value in command line if needed) -->
+        <actuatorUsername>admin</actuatorUsername>
+        <actuatorPassword>password</actuatorPassword>
+        <cassandra-stop-port>8081</cassandra-stop-port>
+        <cassandraContactPoints>localhost</cassandraContactPoints>
+        <cassandraKeyspace>msm</cassandraKeyspace>
+        <cassandraPort>9042</cassandraPort>
+        <cassandraUsername></cassandraUsername>
+        <cassandraPassword></cassandraPassword>
+        <testCassandraContactPoints>${cassandraContactPoints}</testCassandraContactPoints>
+        <testCassandraKeyspace>${cassandraKeyspace}</testCassandraKeyspace>
+        <maven.test.skip>false</maven.test.skip>
+
+    </properties>
+    
+	<dependencies>
+	
+		<dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        
+        <!-- This dependency is added by RequestContext (we need this?) -->
+        <dependency>
+            <groupId>com.pac.lib</groupId>
+            <artifactId>java-core</artifactId>
+            <version>1.0.1-SNAPSHOT</version>
+        </dependency>
+        
+        <!-- Spring data -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-cassandra</artifactId>
+        </dependency>
+        
+        <!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-data-elasticsearch -->
+		<dependency>
+    		<groupId>org.springframework.boot</groupId>
+    		<artifactId>spring-boot-starter-data-elasticsearch</artifactId>
+		</dependency>
+        
+		<!-- jsonrpc4j -->
+        <dependency>
+            <groupId>com.github.briandilley.jsonrpc4j</groupId>
+            <artifactId>jsonrpc4j</artifactId>
+            <version>1.5.3</version>
+        </dependency>
+        
+        <dependency>
+         <groupId>net.java.dev.jna</groupId>
+         <artifactId>jna</artifactId>
+         <version>4.2.2</version>
+       </dependency>
+       
+        <dependency>
+            <groupId>io.swagger</groupId>
+            <artifactId>swagger-core</artifactId>
+            <version>1.5.10</version>
+        </dependency>
+        
+	</dependencies>
+	
+	<!-- Package as an executable jar -->
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+		</plugins>
+		
+		<resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+            <resource>
+                <directory>src/cassandra/cql</directory>
+                <targetPath>${project.build.directory}/cql</targetPath>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+        <testResources>
+            <testResource>
+                <directory>src/test/resources</directory>
+                <filtering>true</filtering>
+            </testResource>
+            <testResource>
+                <directory>src/test/cql</directory>
+                <targetPath>${project.build.directory}/cql</targetPath>
+                <filtering>true</filtering>
+            </testResource>
+        </testResources>
+	</build>
+	
+	
+	<profiles>
+        <profile>
+            <id>localtest</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+                <property>
+                    <name>env</name>
+                    <value>local</value>
+                </property>
+            </activation>
+            <build>
+                <resources>
+                    <resource>
+                        <directory>src/local/resources</directory>
+                        <filtering>true</filtering>
+                    </resource>
+                </resources>
+                <plugins>
+                    <plugin>
+                        <groupId>org.zcore.maven</groupId>
+                        <artifactId>merge-maven-plugin</artifactId>
+                        <version>0.0.3</version>
+                        <executions>
+                            <execution>
+                                <id>merge</id>
+                                <phase>process-resources</phase>
+                                <goals>
+                                    <goal>merge</goal>
+                                </goals>
+                                <configuration>
+                                    <mergers>
+                                        <merger>
+                                            <target>${project.build.directory}/cql/load.cql</target>
+                                            <sources>
+                                                <source>${project.build.directory}/cql/keyspace.cql</source>
+                                                <source>${project.build.directory}/cql/table.cql</source>
+                                            </sources>
+                                        </merger>
+                                    </mergers>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <!-- local Cassandra instance -->
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>cassandra-maven-plugin</artifactId>
+                        <version>3.5</version>
+                        <executions>
+                            <execution>
+                                <id>cassandra-start</id>
+                                <phase>process-test-classes</phase>
+                                <goals>
+                                    <goal>delete</goal>
+                                    <goal>start</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>cassandra-end</id>
+                                <phase>prepare-package</phase>
+                                <goals>
+                                    <goal>stop</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <startNativeTransport>true</startNativeTransport>
+                            <stopPort>${cassandra-stop-port}</stopPort>
+                            <script>${project.build.directory}/cql/load.cql</script>
+                            <skip>${maven.test.skip}</skip>
+                        </configuration>
+                        <dependencies>
+                            <dependency>
+                                <groupId>org.apache.cassandra</groupId>
+                                <artifactId>cassandra-all</artifactId>
+                                <version>${cassandraVersion}</version>
+                            </dependency>
+                        </dependencies>
+                    </plugin>
+                    
+                                        
+                    <plugin>
+    					<groupId>com.github.alexcojocaru</groupId>
+    					<artifactId>elasticsearch-maven-plugin</artifactId>
+    					<!-- REPLACE THE FOLLOWING WITH THE PLUGIN VERSION YOU NEED -->
+    					<version>6.0</version>
+    					
+    					<configuration>
+        					<!-- REPLACE THE FOLLOWING WITH THE ELASTICSEARCH VERSION YOU NEED -->
+        					<version>6.0.0</version>
+        					<clusterName>msm</clusterName>
+        					<transportPort>9300</transportPort>
+        					<httpPort>9200</httpPort>
+        					<setAwait>true</setAwait>
+        					<pathInitScript>src/test/resources/elasticsearch/Init.script</pathInitScript>
+    					</configuration>
+    					<executions>
+        					<!--
+            					The elasticsearch maven plugin goals are by default bound to the
+            					pre-integration-test and post-integration-test phases
+       						-->
+        					<execution>
+            					<id>start-elasticsearch</id>
+            					<phase>pre-integration-test</phase>
+            					<goals>
+            						<goal>delete</goal>
+                					<goal>runforked</goal>
+            					</goals>
+        					</execution>
+        					<execution>
+            					<id>stop-elasticsearch</id>
+            					<phase>post-integration-test</phase>
+            					<goals>
+                					<goal>stop</goal>
+            					</goals>
+        					</execution>
+    					</executions>
+					</plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+</project>
