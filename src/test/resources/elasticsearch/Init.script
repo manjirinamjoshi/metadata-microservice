@@ -1,5 +1,7 @@
 #create index
 #PUT:metadata_name/:{"settings":{"index":{"number_of_shards":1, "number_of_replicas":1}}}
+
+#DELETE:metadata_name/:{}
 #create mapping
 PUT:metadata_name/:{ "mappings":{"default":{ "properties":{ "dbid":{"type":"text"}, "type":{"type":"text"}, "code":{"type":"text"}, "name":{"type":"text"}}}}}
 

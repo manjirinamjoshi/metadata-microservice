@@ -7,7 +7,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.data.cassandra.repository.config.EnableCassandraRepositories;
 import org.springframework.data.elasticsearch.repository.config.EnableElasticsearchRepositories;
 
-import com.pac.msm.component.repository.MyCustomizedCassandraRepository;
 import com.pac.msm.component.repository.search.CustomElasticsearchRepositoryFactoryBean;
 
 @SpringBootApplication

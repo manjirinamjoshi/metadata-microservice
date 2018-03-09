@@ -2,6 +2,7 @@ package com.pac.msm.component.domain;
 
 import java.io.Serializable;
 
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.springframework.cassandra.core.PrimaryKeyType;
 import org.springframework.data.cassandra.mapping.PrimaryKeyClass;
 import org.springframework.data.cassandra.mapping.PrimaryKeyColumn;
@@ -41,5 +42,15 @@ public class Key implements Serializable {
 	public void setCode(String code) {
 		this.code = code;
 	}
+
+	@Override
+	public int hashCode() {
+		return new HashCodeBuilder(17, 37)
+        .append(this.dbid.hashCode())
+        .append(this.type.hashCode())
+        .append(this.code.hashCode())
+        .toHashCode();
+	}
+
 	
 }
