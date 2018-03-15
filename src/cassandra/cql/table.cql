@@ -1,16 +1,26 @@
-// EventMetadata table
-CREATE TABLE IF NOT EXISTS eventmetadata (
-    id text,
-    value text,
-    PRIMARY KEY ((id))
-);
+DROP KEYSPACE IF EXISTS @cassandraKeyspace@;
+CREATE KEYSPACE IF NOT EXISTS @cassandraKeyspace@ WITH replication = {'class': 'SimpleStrategy', 'replication_factor': '1'};
+USE @cassandraKeyspace@;
 
-// Metadata table
-CREATE TABLE IF NOT EXISTS metadata (
+DROP TABLE IF EXISTS codes;
+
+// Table codes
+CREATE TABLE IF NOT EXISTS codes (
     dbid text,
     type text,
-    code text,
-    name text,
-    metadata map<text, text>,
-    PRIMARY KEY ((dbid, type), code)
+    subtype text,
+    id text,
+    name map<text, text>,
+    description map<text, text>,
+    parameters map<text, text>,
+    sequence bigint,
+    z_version bigint,
+    z_createduserid bigint,
+    z_createdusersession varchar,
+    z_createduserip varchar,
+    z_lastupdateduserid bigint,
+    z_lastupdatedusersession varchar,
+    z_lastupdateduserip varchar,
+    z_status int,
+    PRIMARY KEY ((dbid, type), subtype, id)
 );
