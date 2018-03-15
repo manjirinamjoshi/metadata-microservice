@@ -16,8 +16,11 @@ public class Key implements Serializable {
 	@PrimaryKeyColumn(ordinal = 1, type = PrimaryKeyType.PARTITIONED)
 	private String type;
 	
+	@PrimaryKeyColumn(ordinal = 1, type = PrimaryKeyType.CLUSTERED)
+	private String subtype;
+	
 	@PrimaryKeyColumn(ordinal = 0, type = PrimaryKeyType.CLUSTERED)
-	private String code;
+	private String id;
 
 	public String getDbid() {
 		return dbid;
@@ -34,13 +37,21 @@ public class Key implements Serializable {
 	public void setType(String type) {
 		this.type = type;
 	}
-
-	public String getCode() {
-		return code;
+	
+	public String getSubtype() {
+		return subtype;
 	}
 
-	public void setCode(String code) {
-		this.code = code;
+	public void setSubtype(String subtype) {
+		this.subtype = subtype;
+	}
+
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
 	}
 
 	@Override
@@ -48,7 +59,8 @@ public class Key implements Serializable {
 		return new HashCodeBuilder(17, 37)
         .append(this.dbid.hashCode())
         .append(this.type.hashCode())
-        .append(this.code.hashCode())
+        .append(this.subtype.hashCode())
+        .append(this.id.hashCode())
         .toHashCode();
 	}
 

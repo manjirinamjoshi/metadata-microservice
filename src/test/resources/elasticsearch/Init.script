@@ -1,12 +1,8 @@
 #create index
-#PUT:metadata_name/:{"settings":{"index":{"number_of_shards":1, "number_of_replicas":1}}}
+#PUT:metadata_name/:{"settings":{"analysis":{"analyzer":{"lowercasespaceanalyzer":{"type":"custom","tokenizer":"whitespace","filter":["lowercase"]}}},"index":{"number_of_shards":1,"number_of_replicas":1}},
+#"mappings":{"default":{ "properties":{ "dbid":{"type":"text"}, "type":{"type":"text"}, "code":{"type":"text"}, "name":{"type":"text", "analyzer": "lowercasespaceanalyzer"}, "nameRaw":{"type":"text", "index" : false}}}}}
 
-#DELETE:metadata_name/:{}
 #create mapping
-PUT:metadata_name/:{ "mappings":{"default":{ "properties":{ "dbid":{"type":"text"}, "type":{"type":"text"}, "code":{"type":"text"}, "name":{"type":"text"}}}}}
+PUT:codes/:{ "mappings":{"default":{ "properties":{ "dbid":{"type":"text"}, "type":{"type":"text"}, "id":{"type":"text", "index": false}, "name":{"type":"object", "enabled" : false}}}}}
 
-#create index
-#PUT:performerlinks/:{"settings":{"index":{"number_of_shards":1, "number_of_replicas":1}}}
-#create mapping
-PUT:performerlinks/:{ "mappings":{"default":{ "properties":{ "performer":{"type":"text"}, "events":{"type":"text"}}}}}
 

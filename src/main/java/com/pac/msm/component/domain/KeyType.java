@@ -1,0 +1,10 @@
+package com.pac.msm.component.domain;
+
+public enum KeyType {
+
+	EVENT_METADATAKEYS,
+	SEASON_METADATAKEYS,
+	VENUE_METADATAKEYS,
+	PERFORMER_METADATAKEYS,
+	TICKETTIER_METADATAKEYS
+}

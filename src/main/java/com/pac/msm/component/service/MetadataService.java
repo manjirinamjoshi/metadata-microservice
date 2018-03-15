@@ -18,11 +18,10 @@ public interface MetadataService {
 			@JsonRpcParam(value = "requestContext") RequestContext requestContext,
 			@JsonRpcParam(value = "key") Key key) throws PacException;
 
-	public void insertMetadata(
+	public ResponseEntity<Metadata> upsertMetadata(
 			@JsonRpcParam(value = "requestContext") RequestContext requestContext,
 			@JsonRpcParam(value = "metadata") Metadata metadata) throws PacException;
 	
 	public List<Metadata> searchByName(@JsonRpcParam(value = "requestContext") RequestContext requestContext, 
 			@JsonRpcParam(value = "type") String type, @JsonRpcParam(value = "name") String name) throws PacException;
-
 }
