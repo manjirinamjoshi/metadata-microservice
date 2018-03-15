@@ -1,6 +1,9 @@
-DROP KEYSPACE IF EXISTS @cassandraKeyspace@;
-CREATE KEYSPACE IF NOT EXISTS @cassandraKeyspace@ WITH replication = {'class': 'SimpleStrategy', 'replication_factor': '1'};
-USE @cassandraKeyspace@;
+// Type name
+CREATE TYPE IF NOT EXISTS name (
+    first text,
+    last text,
+    middle text
+);
 
 DROP TABLE IF EXISTS codes;
 
@@ -16,9 +19,11 @@ CREATE TABLE IF NOT EXISTS codes (
     sequence bigint,
     z_version bigint,
     z_createduserid bigint,
+    z_createdusername frozen<name>,
     z_createdusersession varchar,
     z_createduserip varchar,
     z_lastupdateduserid bigint,
+    z_lastupdatedusername frozen<name>,
     z_lastupdatedusersession varchar,
     z_lastupdateduserip varchar,
     z_status int,
