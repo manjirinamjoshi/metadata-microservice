@@ -24,6 +24,7 @@ public interface MetadataKeysService {
 	
 	public List<Metadata> getMetadataKeys(
 			@JsonRpcParam(value = "requestContext") RequestContext requestContext,
-			@JsonRpcParam(value = "type") String type) throws PacException;
+			@JsonRpcParam(value = "keyType") String keyType, 
+			@JsonRpcParam(value = "limit") int limit) throws PacException;
 
 }

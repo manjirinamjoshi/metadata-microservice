@@ -3,11 +3,6 @@ package com.pac.msm.component.service.impl;
 import java.util.List;
 
 import org.apache.commons.lang3.EnumUtils;
-import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
-import org.springframework.data.domain.Page;
-import org.springframework.data.elasticsearch.core.query.NativeSearchQuery;
-import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
 import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -72,17 +67,8 @@ public class MetadataKeysServiceImpl implements MetadataKeysService {
 
 	@Override
 	public List<Metadata> getMetadataKeys(
-			RequestContext requestContext, String type) throws PacException {
-		final NativeSearchQueryBuilder nativeSearchQueryBuilder = new NativeSearchQueryBuilder().withQuery(QueryBuilders.matchAllQuery());
-
-		BoolQueryBuilder boolQueryBuilder = new BoolQueryBuilder();
-		boolQueryBuilder.must(QueryBuilders.matchQuery("dbid", "-1"));
-		boolQueryBuilder.must(QueryBuilders.matchQuery("key.type", type));
-		boolQueryBuilder.must(QueryBuilders.matchQuery("key.subtype", SUBTYPE));
-		nativeSearchQueryBuilder.withQuery(boolQueryBuilder);
-		NativeSearchQuery searchQuery = nativeSearchQueryBuilder.build();
-		Page<Metadata> search = elasticSearchMetadataRespository.search(searchQuery);
-		return search.getContent();
+			RequestContext requestContext, String keyType, int limit) throws PacException {
+		return metadataRepository.findMetadataKeysByType(keyType, limit);
 	}
 
 }
