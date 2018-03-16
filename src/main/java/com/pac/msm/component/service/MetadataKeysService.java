@@ -13,11 +13,11 @@ import com.pac.msm.component.domain.Metadata;
 @JsonRpcService("/msm/metadatakeys")
 public interface MetadataKeysService {
 	
-	public ResponseEntity<Metadata> upsertMetadataKey(
+	public ResponseEntity<Metadata> saveMetadataKey(
 			@JsonRpcParam(value = "requestContext") RequestContext requestContext,
 			@JsonRpcParam(value = "metadataKey") Metadata metadataKey) throws PacException;
 	
-	public ResponseEntity<Metadata> upsertMetadataKeys(
+	public ResponseEntity<Metadata> saveMetadataKeys(
 			@JsonRpcParam(value = "requestContext") RequestContext requestContext,
 			@JsonRpcParam(value = "keyType") String keyType,
 			@JsonRpcParam(value = "metadataKeys") List<Metadata> metadataKeys) throws PacException;

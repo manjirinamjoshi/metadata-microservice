@@ -31,7 +31,7 @@ public class MetadataKeysServiceImpl implements MetadataKeysService {
     }
 	
 	@Override
-	public ResponseEntity<Metadata> upsertMetadataKey(
+	public ResponseEntity<Metadata> saveMetadataKey(
 			RequestContext requestContext, Metadata metadataKey)
 			throws PacException {
 		if(EnumUtils.isValidEnum(KeyType.class, metadataKey.getKey().getType())) {
@@ -46,7 +46,7 @@ public class MetadataKeysServiceImpl implements MetadataKeysService {
 	}
 
 	@Override
-	public ResponseEntity<Metadata> upsertMetadataKeys(
+	public ResponseEntity<Metadata> saveMetadataKeys(
 			RequestContext requestContext, String keyType, List<Metadata> metadataKeys)
 			throws PacException {
 		if(EnumUtils.isValidEnum(KeyType.class, keyType)) {
