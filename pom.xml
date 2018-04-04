@@ -3,8 +3,10 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<artifactId>metadata</artifactId>
-	<version>1.0.0-SNAPSHOT</version>
+	<groupId>com.pac</groupId>
+	<artifactId>java-metadata</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<packaging>jar</packaging>
 
     <parent>
 		<groupId>org.springframework.boot</groupId>
@@ -29,7 +31,7 @@
         <actuatorPassword>password</actuatorPassword>
         <cassandra-stop-port>8081</cassandra-stop-port>
         <cassandraContactPoints>localhost</cassandraContactPoints>
-        <cassandraKeyspace>msm</cassandraKeyspace>
+        <cassandraKeyspace>catalog</cassandraKeyspace>
         <cassandraPort>9042</cassandraPort>
         <cassandraUsername></cassandraUsername>
         <cassandraPassword></cassandraPassword>
@@ -72,11 +74,13 @@
             <version>1.5.3</version>
         </dependency>
         
-        <dependency>
+        <!-- Runtime, for Embedded Elasticsearch,
+            comment this if connect to external elastic search server-->
+        <!--  dependency>
          <groupId>net.java.dev.jna</groupId>
          <artifactId>jna</artifactId>
          <version>4.2.2</version>
-       </dependency>
+       </dependency-->
        
         <dependency>
             <groupId>io.swagger</groupId>
@@ -92,6 +96,9 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+        			<layout>MODULE</layout>
+    			</configuration>
 			</plugin>
 		</plugins>
 		
@@ -213,7 +220,7 @@
         					<clusterName>msm</clusterName>
         					<transportPort>9300</transportPort>
         					<httpPort>9200</httpPort>
-        					<setAwait>true</setAwait>
+        					<setAwait>false</setAwait>
         					<pathInitScript>src/test/resources/elasticsearch/Init.script</pathInitScript>
     					</configuration>
     					<executions>
@@ -225,7 +232,6 @@
             					<id>start-elasticsearch</id>
             					<phase>pre-integration-test</phase>
             					<goals>
-            						<goal>delete</goal>
                 					<goal>runforked</goal>
             					</goals>
         					</execution>
@@ -241,5 +247,39 @@
                 </plugins>
             </build>
         </profile>
+        
+        <profile>
+            <id>aws</id>
+            <activation>
+                <property>
+                    <name>env</name>
+                    <value>aws</value>
+                </property>
+            </activation>
+            <properties>
+                <actuatorUsername>${ACT_USERNAME}</actuatorUsername>
+                <actuatorPassword>${ACT_PASSWORD}</actuatorPassword>
+                <maven.test.skip>true</maven.test.skip>
+            </properties>
+            <build>
+                <resources>
+                    <resource>
+                        <directory>src/server/resources</directory>
+                        <filtering>true</filtering>
+                    </resource>
+                </resources>
+            </build>
+        </profile>
     </profiles>
+    
+    <distributionManagement>
+		<repository>
+			<id>releases</id>
+			<url>http://nexus.paciolan.corp:8081/nexus/content/repositories/releases</url>
+		</repository>
+		<snapshotRepository>
+			<id>snapshots</id>
+			<url>http://nexus.paciolan.corp:8081/nexus/content/repositories/snapshots</url>
+		</snapshotRepository>
+	</distributionManagement>
 </project>
