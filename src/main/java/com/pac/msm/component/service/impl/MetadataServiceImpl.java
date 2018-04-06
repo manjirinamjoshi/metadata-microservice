@@ -83,6 +83,17 @@ public class MetadataServiceImpl implements MetadataService {
 	}
 	
 	@Override
+	public ResponseEntity<Metadata> deleteMetadata(RequestContext requestContext, Key key) throws PacException {
+		if(EnumUtils.isValidEnum(Type.class, key.getType())) {
+			MapId primaryKey = BasicMapId.id("dbid", key.getDbid()).with("type", key.getType()).with("subtype", SUBTYPE).with("id", key.getId());
+			metadataRepository.delete(primaryKey);
+			return ResponseEntity.status(HttpStatus.OK).body(null);
+		}
+		com.pac.msm.component.domain.Error error = new com.pac.msm.component.domain.Error("INVALID_TYPE",123,"Type is invalid");
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body((Metadata) error);
+	}
+	
+	@Override
 	public ResponseEntity<Metadata> saveMetadataAndLinkPerformers(RequestContext requestContext, Metadata metadata, List<String> performers) throws PacException {
 		if(EnumUtils.isValidEnum(Type.class, metadata.getKey().getType())) {
 			metadata.getKey().setSubtype(SUBTYPE);

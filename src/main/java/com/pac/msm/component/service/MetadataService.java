@@ -27,6 +27,10 @@ public interface MetadataService {
 			@JsonRpcParam(value = "type") String type,
 			@JsonRpcParam(value = "name") String name) throws PacException;
 	
+	public ResponseEntity<Metadata> deleteMetadata(
+			@JsonRpcParam(value = "requestContext") RequestContext requestContext,
+			@JsonRpcParam(value = "key") Key key) throws PacException;
+	
 	public ResponseEntity<Metadata> saveMetadataAndLinkPerformers(
 			@JsonRpcParam(value = "requestContext") RequestContext requestContext,
 			@JsonRpcParam(value = "metadata") Metadata metadata,
