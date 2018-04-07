@@ -55,12 +55,13 @@ public class MetadataServiceImpl implements MetadataService {
 	}
 	
 	@Override
-	public List<Metadata> searchByName(RequestContext requestContext, String type, String name) throws PacException {
+	public List<Metadata> searchByName(RequestContext requestContext, String dbid, String type, String name) throws PacException {
 		final NativeSearchQueryBuilder nativeSearchQueryBuilder = new NativeSearchQueryBuilder().withQuery(QueryBuilders.matchAllQuery());
 
 		BoolQueryBuilder boolQueryBuilder = new BoolQueryBuilder();
 		boolQueryBuilder.must(QueryBuilders.matchQuery("key.subtype", SUBTYPE));
 		boolQueryBuilder.must(QueryBuilders.matchQuery("key.type", type));
+		boolQueryBuilder.must(QueryBuilders.matchQuery("key.dbid", dbid));
 		if(TextUtils.isNotNullNotEmpty(name)) {
 			boolQueryBuilder.must(QueryBuilders.wildcardQuery("name.en_US", name.toLowerCase()));
 		}

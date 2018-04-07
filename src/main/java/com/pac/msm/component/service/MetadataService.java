@@ -24,6 +24,7 @@ public interface MetadataService {
 	
 	public List<Metadata> searchByName(
 			@JsonRpcParam(value = "requestContext") RequestContext requestContext,
+			@JsonRpcParam(value = "dbid") String dbid,
 			@JsonRpcParam(value = "type") String type,
 			@JsonRpcParam(value = "name") String name) throws PacException;
 	
