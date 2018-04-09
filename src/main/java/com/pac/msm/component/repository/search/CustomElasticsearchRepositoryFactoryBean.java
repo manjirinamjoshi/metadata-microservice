@@ -10,6 +10,8 @@ import org.springframework.data.repository.core.RepositoryMetadata;
 import org.springframework.data.repository.core.support.RepositoryFactorySupport;
 import org.springframework.util.Assert;
 
+import com.pac.msm.component.domain.Metadata;
+
 public class CustomElasticsearchRepositoryFactoryBean<T extends Repository<S, ID>, S, ID extends Serializable> extends ElasticsearchRepositoryFactoryBean<T, S, ID> {
 
     private ElasticsearchOperations operations;
@@ -21,6 +23,7 @@ public class CustomElasticsearchRepositoryFactoryBean<T extends Repository<S, ID
     public void setElasticsearchOperations(ElasticsearchOperations operations) {
         super.setElasticsearchOperations(operations);
         Assert.notNull(operations);
+        operations.putMapping(Metadata.class);
         this.operations = operations;
     }
 

@@ -55,6 +55,20 @@ public class MetadataServiceImpl implements MetadataService {
 	}
 	
 	@Override
+	public List<Metadata> getAllMetadataByDbId(RequestContext requestContext, String dbid, String type) throws PacException {
+		final NativeSearchQueryBuilder nativeSearchQueryBuilder = new NativeSearchQueryBuilder().withQuery(QueryBuilders.matchAllQuery());
+
+		BoolQueryBuilder boolQueryBuilder = new BoolQueryBuilder();
+		boolQueryBuilder.must(QueryBuilders.matchQuery("key.subtype", SUBTYPE));
+		boolQueryBuilder.must(QueryBuilders.matchQuery("key.type", type));
+		boolQueryBuilder.must(QueryBuilders.matchQuery("key.dbid", dbid));
+		nativeSearchQueryBuilder.withQuery(boolQueryBuilder);
+		NativeSearchQuery searchQuery = nativeSearchQueryBuilder.build();
+		Page<Metadata> search = elasticSearchMetadataRespository.search(searchQuery);
+		return search.getContent();
+	}
+	
+	@Override
 	public List<Metadata> searchByName(RequestContext requestContext, String dbid, String type, String name) throws PacException {
 		final NativeSearchQueryBuilder nativeSearchQueryBuilder = new NativeSearchQueryBuilder().withQuery(QueryBuilders.matchAllQuery());
 
@@ -76,6 +90,7 @@ public class MetadataServiceImpl implements MetadataService {
 		if(EnumUtils.isValidEnum(Type.class, metadata.getKey().getType())) {
 			metadata.getKey().setSubtype(SUBTYPE);
 			metadataRepository.insert(metadata);
+			metadata.setParameters(null);
 			elasticSearchMetadataRespository.save(metadata);
 			return ResponseEntity.status(HttpStatus.OK).body(null);
 		}
@@ -107,6 +122,7 @@ public class MetadataServiceImpl implements MetadataService {
 				metadata.setParameters(parameters);
 			}
 			metadataRepository.insert(metadata);
+			metadata.setParameters(null);
 			elasticSearchMetadataRespository.save(metadata);
 			return ResponseEntity.status(HttpStatus.OK).body(null);
 		}

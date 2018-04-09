@@ -5,6 +5,9 @@ import java.util.Map;
 import org.springframework.data.cassandra.mapping.PrimaryKey;
 import org.springframework.data.cassandra.mapping.Table;
 import org.springframework.data.elasticsearch.annotations.Document;
+import org.springframework.data.elasticsearch.annotations.Field;
+import org.springframework.data.elasticsearch.annotations.FieldIndex;
+import org.springframework.data.elasticsearch.annotations.FieldType;
 
 @Table(value = "codes")
 @Document(indexName="codes", type="default", createIndex=false)
@@ -15,6 +18,7 @@ public class Metadata {
 	
 	private Map<String, String> name;
 	
+	@Field(store = false, type = FieldType.Object)
 	private Map<String, String> parameters;
 
 	public Key getKey() {

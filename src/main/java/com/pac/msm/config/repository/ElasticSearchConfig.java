@@ -11,6 +11,7 @@ import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.data.elasticsearch.core.ElasticsearchTemplate;
 import org.springframework.data.elasticsearch.repository.config.EnableElasticsearchRepositories;
 
+import com.pac.msm.component.domain.Metadata;
 import com.pac.msm.component.repository.search.CustomElasticsearchRepositoryFactoryBean;
 
 import java.net.InetAddress;
@@ -45,7 +46,9 @@ public class ElasticSearchConfig {
 
     @Bean
     public ElasticsearchOperations elasticsearchTemplate() throws Exception {
-        return new ElasticsearchTemplate(client());
+        ElasticsearchTemplate elasticsearchTemplate = new ElasticsearchTemplate(client());
+        elasticsearchTemplate.putMapping(Metadata.class);
+        return elasticsearchTemplate;
     }
 
     //Embedded Elasticsearch Server

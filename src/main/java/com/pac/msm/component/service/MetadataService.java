@@ -17,6 +17,11 @@ public interface MetadataService {
 	public ResponseEntity<Metadata> getMetadata(
 			@JsonRpcParam(value = "requestContext") RequestContext requestContext,
 			@JsonRpcParam(value = "key") Key key) throws PacException;
+	
+	public List<Metadata> getAllMetadataByDbId(
+			@JsonRpcParam(value = "requestContext") RequestContext requestContext,
+			@JsonRpcParam(value = "dbid") String dbid, 
+			@JsonRpcParam(value = "type") String type) throws PacException;
 
 	public ResponseEntity<Metadata> saveMetadata(
 			@JsonRpcParam(value = "requestContext") RequestContext requestContext,
