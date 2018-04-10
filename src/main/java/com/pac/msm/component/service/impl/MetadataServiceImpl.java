@@ -1,8 +1,10 @@
 package com.pac.msm.component.service.impl;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.lang3.EnumUtils;
 import org.elasticsearch.index.query.BoolQueryBuilder;
@@ -65,7 +67,13 @@ public class MetadataServiceImpl implements MetadataService {
 		nativeSearchQueryBuilder.withQuery(boolQueryBuilder);
 		NativeSearchQuery searchQuery = nativeSearchQueryBuilder.build();
 		Page<Metadata> search = elasticSearchMetadataRespository.search(searchQuery);
-		return search.getContent();
+		List<Metadata> content = search.getContent();
+		if(content!=null) {
+			for (Metadata metadata : content) {
+				replaceKeysChar("::",".",metadata.getParameters());
+			}
+		}
+		return content;
 	}
 	
 	@Override
@@ -82,17 +90,32 @@ public class MetadataServiceImpl implements MetadataService {
 		nativeSearchQueryBuilder.withQuery(boolQueryBuilder);
 		NativeSearchQuery searchQuery = nativeSearchQueryBuilder.build();
 		Page<Metadata> search = elasticSearchMetadataRespository.search(searchQuery);
-		return search.getContent();
+		List<Metadata> content = search.getContent();
+		if(content!=null) {
+			for (Metadata metadata : content) {
+				replaceKeysChar("::",".",metadata.getParameters());
+			}
+		}
+		return content;
 	}
 	
 	@Override
 	public ResponseEntity<Metadata> saveMetadata(RequestContext requestContext, Metadata metadata) throws PacException {
 		if(EnumUtils.isValidEnum(Type.class, metadata.getKey().getType())) {
 			metadata.getKey().setSubtype(SUBTYPE);
-			metadataRepository.insert(metadata);
-			metadata.setParameters(null);
+			Metadata savedMetadata = metadataRepository.insert(metadata);
+			Map<String, String> parameters = metadata.getParameters();
+			
+			// set parameters to null because 
+			// ElasticSearch complains about Field name [blah.blah] cannot contain ‘.’
+			//metadata.setParameters(null);
+			
+			replaceKeysChar("\\.","::",metadata.getParameters());
 			elasticSearchMetadataRespository.save(metadata);
-			return ResponseEntity.status(HttpStatus.OK).body(null);
+			
+			replaceKeysChar("::",".",metadata.getParameters());
+			savedMetadata.setParameters(parameters);
+			return ResponseEntity.status(HttpStatus.OK).body(savedMetadata);
 		}
 		com.pac.msm.component.domain.Error error = new com.pac.msm.component.domain.Error("INVALID_TYPE",123,"Type is invalid");
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body((Metadata) error);
@@ -103,6 +126,9 @@ public class MetadataServiceImpl implements MetadataService {
 		if(EnumUtils.isValidEnum(Type.class, key.getType())) {
 			MapId primaryKey = BasicMapId.id("dbid", key.getDbid()).with("type", key.getType()).with("subtype", SUBTYPE).with("id", key.getId());
 			metadataRepository.delete(primaryKey);
+			
+			key.setSubtype(SUBTYPE);
+			elasticSearchMetadataRespository.delete(key);
 			return ResponseEntity.status(HttpStatus.OK).body(null);
 		}
 		com.pac.msm.component.domain.Error error = new com.pac.msm.component.domain.Error("INVALID_TYPE",123,"Type is invalid");
@@ -145,6 +171,23 @@ public class MetadataServiceImpl implements MetadataService {
 			}
 		}
 		return response;
+	}
+	
+	private void replaceKeysChar(String originalChar, String newChar, Map<String, String> map) {
+	    Map<String, String> tempMap = new HashMap<String, String>();
+	    Set<String> tempSet = new HashSet<String>();
+	    if(map!=null) {
+	    	for (Map.Entry<String, String> entry : map.entrySet()) {
+	    		String originalKey = entry.getKey();
+	    		String newKey = originalKey .replaceAll(originalChar, newChar);
+	    		if (!newKey.equals(originalKey)) {
+	    			tempMap.put(newKey, entry.getValue());
+	    			tempSet.add(originalKey);
+	    		}
+	    	}
+	    	map.keySet().removeAll(tempSet);
+	    	map.putAll(tempMap);
+	    }
 	}
 
 }
