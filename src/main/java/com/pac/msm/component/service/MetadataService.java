@@ -47,4 +47,13 @@ public interface MetadataService {
 			@JsonRpcParam(value = "dbid") String dbid,
 			@JsonRpcParam(value = "id") String id,
 			@JsonRpcParam(value = "performers") List<String> performers) throws PacException;
+	
+	public List<Metadata> searchByGeoLocation(
+			@JsonRpcParam(value = "requestContext") RequestContext requestContext,
+			@JsonRpcParam(value = "dbid") String dbid, 
+			@JsonRpcParam(value = "latitude") double latitude, 
+			@JsonRpcParam(value = "longitude") double longitude, 
+			@JsonRpcParam(value = "distance") String distance)
+			throws PacException;
+
 }

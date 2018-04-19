@@ -8,10 +8,13 @@ import java.util.Set;
 
 import org.apache.commons.lang3.EnumUtils;
 import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.GeoDistanceQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.springframework.data.cassandra.repository.MapId;
 import org.springframework.data.cassandra.repository.support.BasicMapId;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.elasticsearch.core.geo.GeoPoint;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQuery;
 import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
 import org.springframework.data.elasticsearch.repository.ElasticsearchRepository;
@@ -27,6 +30,7 @@ import com.pac.lib.core.util.TextUtils;
 import com.pac.msm.component.domain.Constants;
 import com.pac.msm.component.domain.Key;
 import com.pac.msm.component.domain.Metadata;
+import com.pac.msm.component.domain.Name;
 import com.pac.msm.component.domain.Type;
 import com.pac.msm.component.repository.MetadataRepository;
 import com.pac.msm.component.service.MetadataService;
@@ -65,6 +69,7 @@ public class MetadataServiceImpl implements MetadataService {
 		boolQueryBuilder.must(QueryBuilders.matchQuery("key.type", type));
 		boolQueryBuilder.must(QueryBuilders.matchQuery("key.dbid", dbid));
 		nativeSearchQueryBuilder.withQuery(boolQueryBuilder);
+		nativeSearchQueryBuilder.withPageable(new PageRequest(0,1000));
 		NativeSearchQuery searchQuery = nativeSearchQueryBuilder.build();
 		Page<Metadata> search = elasticSearchMetadataRespository.search(searchQuery);
 		List<Metadata> content = search.getContent();
@@ -85,8 +90,10 @@ public class MetadataServiceImpl implements MetadataService {
 		boolQueryBuilder.must(QueryBuilders.matchQuery("key.type", type));
 		boolQueryBuilder.must(QueryBuilders.matchQuery("key.dbid", dbid));
 		if(TextUtils.isNotNullNotEmpty(name)) {
-			boolQueryBuilder.must(QueryBuilders.wildcardQuery("name.en_US", name.toLowerCase()));
+			//boolQueryBuilder.must(QueryBuilders.wildcardQuery("name.en_US", name.toLowerCase()));
+			boolQueryBuilder.must(QueryBuilders.matchPhrasePrefixQuery("name.en_US", name.toLowerCase()));
 		}
+		nativeSearchQueryBuilder.withPageable(new PageRequest(0,1000));
 		nativeSearchQueryBuilder.withQuery(boolQueryBuilder);
 		NativeSearchQuery searchQuery = nativeSearchQueryBuilder.build();
 		Page<Metadata> search = elasticSearchMetadataRespository.search(searchQuery);
@@ -103,18 +110,41 @@ public class MetadataServiceImpl implements MetadataService {
 	public ResponseEntity<Metadata> saveMetadata(RequestContext requestContext, Metadata metadata) throws PacException {
 		if(EnumUtils.isValidEnum(Type.class, metadata.getKey().getType())) {
 			metadata.getKey().setSubtype(SUBTYPE);
-			Metadata savedMetadata = metadataRepository.insert(metadata);
+			if(requestContext!=null && requestContext.getUserName()!=null){
+				Name name = new Name();
+				name.setFirst(requestContext.getUserName().getFirst());
+				name.setLast(requestContext.getUserName().getLast());
+				metadata.setZ_lastupdatedusername(name);
+			}
+			
+			Metadata savedMetadata = metadataRepository.save(metadata);
 			Map<String, String> parameters = metadata.getParameters();
 			
 			// set parameters to null because 
 			// ElasticSearch complains about Field name [blah.blah] cannot contain ‘.’
 			//metadata.setParameters(null);
 			
+			if(metadata.getKey().getType().equals(Type.FACILITY_METADATA.toString())) {
+				if(parameters!=null) {
+					String latitude = parameters.get("venue.latitude");
+					String longitude = parameters.get("venue.longitude");
+					if(latitude!=null && longitude!=null) {
+						GeoPoint location = new GeoPoint(Double.parseDouble(latitude), Double.parseDouble(longitude));
+						metadata.setLocation(location);
+					}
+				}
+			}
 			replaceKeysChar("\\.","::",metadata.getParameters());
+			if(metadata.getParameters()!=null && metadata.getParameters().isEmpty()) {
+				metadata.setParameters(null);
+			}
 			elasticSearchMetadataRespository.save(metadata);
 			
 			replaceKeysChar("::",".",metadata.getParameters());
 			savedMetadata.setParameters(parameters);
+			if(savedMetadata.getParameters()!=null && savedMetadata.getParameters().isEmpty()) {
+				savedMetadata.setParameters(null);
+			}
 			return ResponseEntity.status(HttpStatus.OK).body(savedMetadata);
 		}
 		com.pac.msm.component.domain.Error error = new com.pac.msm.component.domain.Error("INVALID_TYPE",123,"Type is invalid");
@@ -171,6 +201,32 @@ public class MetadataServiceImpl implements MetadataService {
 			}
 		}
 		return response;
+	}
+	
+	@Override
+	public List<Metadata> searchByGeoLocation(RequestContext requestContext, String dbid, double latitude, double longitude, String distance) throws PacException {
+		final NativeSearchQueryBuilder nativeSearchQueryBuilder = new NativeSearchQueryBuilder().withQuery(QueryBuilders.matchAllQuery());
+
+		GeoDistanceQueryBuilder builder = new GeoDistanceQueryBuilder("location");
+		builder.lat(latitude);
+		builder.lon(longitude);
+		builder.distance(distance);
+		BoolQueryBuilder boolQueryBuilder = new BoolQueryBuilder();
+		boolQueryBuilder.must(QueryBuilders.matchQuery("key.subtype", SUBTYPE));
+		boolQueryBuilder.must(QueryBuilders.matchQuery("key.type", "FACILITY_METADATA"));
+		boolQueryBuilder.must(QueryBuilders.matchQuery("key.dbid", dbid));
+		nativeSearchQueryBuilder.withPageable(new PageRequest(0,1000));
+		nativeSearchQueryBuilder.withQuery(boolQueryBuilder);
+		nativeSearchQueryBuilder.withQuery(builder);
+		NativeSearchQuery searchQuery = nativeSearchQueryBuilder.build();
+		Page<Metadata> search = elasticSearchMetadataRespository.search(searchQuery);
+		List<Metadata> content = search.getContent();
+		if(content!=null) {
+			for (Metadata metadata : content) {
+				replaceKeysChar("::",".",metadata.getParameters());
+			}
+		}
+		return content;
 	}
 	
 	private void replaceKeysChar(String originalChar, String newChar, Map<String, String> map) {

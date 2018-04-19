@@ -3,6 +3,6 @@
 #"mappings":{"default":{ "properties":{ "dbid":{"type":"text"}, "type":{"type":"text"}, "code":{"type":"text"}, "name":{"type":"text", "analyzer": "lowercasespaceanalyzer"}, "nameRaw":{"type":"text", "index" : false}}}}}
 
 #create mapping
-PUT:codes/:{ "mappings":{"default":{ "properties":{ "dbid":{"type":"text"}, "type":{"type":"text"}, "id":{"type":"text", "index": false}, "name":{"type":"object", "enabled" : false}}}}}
+PUT:jam.cds/:{ "mappings":{"default":{ "properties":{ "dbid":{"type":"text"}, "type":{"type":"text"}, "id":{"type":"text", "index": false}, "name":{"type":"object", "enabled" : false}}}}}
 
 

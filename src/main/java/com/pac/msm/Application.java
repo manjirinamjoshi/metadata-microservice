@@ -10,7 +10,7 @@ import org.springframework.data.elasticsearch.repository.config.EnableElasticsea
 import com.pac.msm.component.repository.search.CustomElasticsearchRepositoryFactoryBean;
 
 @SpringBootApplication
-@EnableCassandraRepositories(/*repositoryBaseClass = MyCustomizedCassandraRepository.class*/basePackages = "com.pac.msm.component.repository")
+@EnableCassandraRepositories(basePackages = "com.pac.msm.component.repository")
 @EnableElasticsearchRepositories(basePackages = "com.pac.msm.component.repository.search", repositoryFactoryBeanClass = CustomElasticsearchRepositoryFactoryBean.class)
 public class Application {
 	
@@ -30,5 +30,31 @@ public class Application {
         
         SpringApplication.run(Application.class, args);
 	}
+	
+	/*private void initZk() {
+		String zkUri = System.getenv(ZK_SERVERS);
+		if (!TextUtils.isNotNullNotEmpty(zkUri)) {
+			zkUri = System.getProperty(ZK_SERVERS, "dev-usw-r1-def-h1:2181/dev");
+		}
+		String zkSessionTimeoutStr = System.getenv(ZK_SESSION_TIMEOUT);
+		if (!TextUtils.isNotNullNotEmpty(zkSessionTimeoutStr)) {
+			zkSessionTimeoutStr = System.getProperty(ZK_SESSION_TIMEOUT);
+		}
+
+		int zkSessionTimeout = TextUtils.toInteger(zkSessionTimeoutStr,
+				DEFAULT_ZOOKEEPER_TIMEOUT);
+		try {
+			CoordinateService cs = new CoordinateServiceImpl(zkUri,
+					zkSessionTimeout);
+			Registry.register(CoordinateService.class.getName(),
+					Registry.DEFAULT, cs);
+			cs.init();
+			Logger.info(SysRequestContext.get(), "zookeeper inited.");
+		} catch (PacException e) {
+			Logger.error(SysRequestContext.get(),
+					"failed to connect to zookeeper, zkuri=" + zkUri, e);
+			System.exit(-1);
+		}
+	}*/
 
 }

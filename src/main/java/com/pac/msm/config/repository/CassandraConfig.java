@@ -70,9 +70,11 @@ public class CassandraConfig {
         return mappingContext;
     }*/
     
-    @Bean
+    //@Bean
     public CassandraMappingContext mappingContext() {
-        return new BasicCassandraMappingContext();
+        BasicCassandraMappingContext basicCassandraMappingContext = new BasicCassandraMappingContext();
+        basicCassandraMappingContext.setUserTypeResolver(new SimpleUserTypeResolver(cluster().getObject(), "catalog"));
+        return basicCassandraMappingContext;
     }
 
     /*@Bean
@@ -82,7 +84,7 @@ public class CassandraConfig {
     
     @Bean
     public CassandraConverter converter() throws ClassNotFoundException {
-        return new MappingCassandraConverter();
+        return new MappingCassandraConverter(mappingContext());
     }
 
     @Bean
@@ -100,7 +102,8 @@ public class CassandraConfig {
     @Bean
     public CassandraOperations cassandraTemplate() throws Exception {
         CassandraSessionFactoryBean session = session();
-        return new CassandraTemplate(session.getObject(), session.getConverter());
+        CassandraTemplate cassandraTemplate = new CassandraTemplate(session.getObject(), session.getConverter());
+        return cassandraTemplate;
     }
     
     public static String translateIP(String orgIp, String template) {

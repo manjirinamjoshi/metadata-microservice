@@ -23,7 +23,8 @@ public class CustomElasticsearchRepositoryFactoryBean<T extends Repository<S, ID
     public void setElasticsearchOperations(ElasticsearchOperations operations) {
         super.setElasticsearchOperations(operations);
         Assert.notNull(operations);
-        operations.putMapping(Metadata.class);
+        //this only works if index already exists !
+        //operations.putMapping(Metadata.class);
         this.operations = operations;
     }
 
